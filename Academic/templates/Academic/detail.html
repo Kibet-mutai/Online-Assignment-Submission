@@ -1,0 +1,31 @@
+{% extends 'Academic/base.html' %}
+{% load static %}
+{% block content %}
+<head>
+<h1>order detail</h1>
+<link rel="stylesheet" href="{% static 'styles/style.css' %}">
+<title>Orders</title>
+        <section class="order-area">
+            <center>
+            <font size="6">
+<style>
+   
+</style>
+</head>
+                  
+<p>ORDERS</p>
+
+            </font>
+            {% for assignment in assignments %}
+                <div id="order" class="order-item">
+                    <h2>{{assignment.title}}</h2>
+                      
+                    <p>{{assignment.description}}</p>
+            {% endfor %}
+<button> <a href="/update/order.id">edit</a></button> 
+
+                </div>
+
+            </center>
+        </section>
+{% endblock %}

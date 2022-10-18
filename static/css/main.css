@@ -1,0 +1,80 @@
+
+
+.home{
+  margin-right: 5%;
+  margin-top: 15px;
+  margin-left: 15px;
+  margin-bottom: 15px;
+  padding-top: 15px;
+  padding-left: 15px;
+  padding-right: 5px;
+  padding-bottom: 15px;
+  border-radius: 10px;
+  box-shadow: 15px 15px 15px black;
+  text-align: justify;
+  color: white;
+  background-image: linear-gradient(rgb(129, 196, 235), rgb(5, 44, 151));
+}
+
+
+
+    .home{
+  margin-right: 5%;
+  margin-top: 15px;
+  margin-left: 15px;
+  margin-bottom: 15px;
+  padding-top: 15px;
+  padding-left: 15px;
+  padding-right: 5px;
+  padding-bottom: 15px;
+  border-radius: 10px;
+  box-shadow: 15px 15px 15px black;
+  text-align: justify;
+  color: white;
+  background-image: linear-gradient(rgb(129, 196, 235), rgb(5, 44, 151));
+}
+.essay{
+  margin-right: 5%;
+  margin-top: 15px;
+  margin-left: 15px;
+  margin-bottom: 15px;
+  padding-top: 15px;
+  padding-left: 15px;
+  padding-right: 5px;
+  padding-bottom: 15px;
+  border-radius: 10px;
+  box-shadow: 15px 15px 15px black;
+  text-align: justify;
+  color: white;
+  background-image: linear-gradient(rgb(129, 196, 235), rgb(5, 44, 151));
+}
+
+.order-area {
+  
+  background-repeat: no-repeat;
+  background-position: left;
+  box-sizing: border-box;
+    }
+
+    .order-item {
+    width: 75%;
+    margin-top:5px;
+    margin-bottom:15px;
+    margin-left: 5%;
+    margin-right: 5%;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border-radius: 10px;
+    box-shadow: 10px 10px 40px gray;
+    text-align: justify;
+    color: white;
+    background-color: black;
+    }
+
+    #order {
+    border-left: 15px solid;
+    border-image: linear-gradient(purple, tomato);
+    border-image-slice: 1;
+    }
