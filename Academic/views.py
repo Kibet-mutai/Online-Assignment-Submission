@@ -180,19 +180,19 @@ def logout_page(request):
 
 
 #register user
-@unauthenticated_user
-def register_student(request):
-    form = createUSerForm()
-    if request.method == 'POST':
-        form = createUSerForm(request.POST)
-        if form.is_valid():
-            user = form.save() 
-            username = form.cleaned_data.get('username')
-            messages.success(request, 'Account created successfully!')
-            return redirect('student_login')
+# @unauthenticated_user
+# def register_student(request):
+#     form = createUSerForm()
+#     if request.method == 'POST':
+#         form = createUSerForm(request.POST)
+#         if form.is_valid():
+#             user = form.save() 
+#             username = form.cleaned_data.get('username')
+#             messages.success(request, 'Account created successfully!')
+#             return redirect('student_login')
        
-    context = {'form':form}
-    return render(request, 'Academic/register.html', context)
+#     context = {'form':form}
+#     return render(request, 'Academic/register.html', context)
 
 
 
@@ -204,9 +204,18 @@ def register_tutor(request):
         form = createUSerForm(request.POST)
         if form.is_valid():
             user = form.save() 
+            user.user_type = user_type
             username = form.cleaned_data.get('username')
             messages.success(request, 'Account created successfully!')
-            return redirect('tutor_login')
+            user_type = user_type.get(username=username)
+            if user_type is None:
+                messages.info(request, "Please specify if you are a student/tutor!")
+            if user_type == User.TUTOR:
+                Tutor.objects.create(admin=user)
+            elif user_type == User.STUDENT:
+                Student.objects.create(admin=user)
+                print('register')
+            return redirect('login')
        
     context = {'form':form}
     return render(request, 'Academic/register.html', context)
@@ -218,15 +227,18 @@ def tutor_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password ')
-        user_login = User.objects.get(username=username)
+        user= User.objects.get(username=username)
         user = authenticate(request, username = username, password=password)
 
         if user is not None:
             login(request, user)
-            return redirect('home')
-        else:
-            messages.info(request, 'Username OR Password is incorrect!')
-    
+            
+            if user.user_type == User.STUDENT:
+                return redirect('student_home')
+            elif user.user_type == User.TUTOR:
+                return redirect('staff_home')
+            else:
+                messages.info(request, 'Username OR Password is incorrect!')
     context = {}
-    return render(request, 'Academic/tutor_login.html', context)
+    return render(request, 'Academic/login.html', context)
 

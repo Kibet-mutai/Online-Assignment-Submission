@@ -2,14 +2,19 @@
 
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 
 # Create your models here.
 
+class User(User):
+    STUDENT = '1'
+    TUTOR = '2'
+
+    user_type_data = (TUTOR, 'TUTOR'), (STUDENT, 'STUDENT')
+    user_type = models.CharField(default=1, choices=user_type_data, max_length=25)
 
 class Student(models.Model):
     user = models.OneToOneField(User, null=True, on_delete = models.CASCADE,related_name='student')
-    prefix = 'S'
     first_name =  models.CharField(max_length=50)
     last_name =  models.CharField(max_length=50)
     email = models.EmailField()
@@ -21,7 +26,6 @@ class Student(models.Model):
 
 class Tutor(models.Model):
     user = models.OneToOneField(User, null=True, on_delete = models.CASCADE, related_name='tutor')
-    prefix = 'T'
     first_name =  models.CharField(max_length=50)
     last_name =  models.CharField(max_length=50)
     email = models.EmailField()
