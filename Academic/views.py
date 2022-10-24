@@ -1,15 +1,10 @@
-from multiprocessing import context
-from django.contrib.auth.models import Group
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth import logout, login, authenticate
-from Academic.forms import AnswerForm, AssignmentForm, createUSerForm
+from Academic.forms import AnswerForm, AssignmentForm, SignupForm, LoginForm
 from django.contrib import messages
-from Academic.models import Answer, Assignment, Student, Tutor
-from .decorators import admin, allowed_user, unauthenticated_user
+from Academic.models import Answer, Assignment, User, Student, Tutor
 from django.utils.decorators import method_decorator
 
 
@@ -18,29 +13,30 @@ from django.utils.decorators import method_decorator
 def Home(request):
     return render(request, 'Academic/index.html')
 
-@allowed_user(allowed_roles=['staff'])
 def student_home(request):
     return render(request, 'Academic/student_home.html')
 
+def tutor_home(request):
+    return render(request, 'Academic/tutor_home.html')
+
 @login_required(login_url='login')
-@admin
+
 def student(request, id):
     students = Student.objects.get(id=id)
-    assignments = students.order_set.all()
+    assignments = students.assignmnent_set.all()
     assignments_count = assignments.count()
     
     context = {'students':students, 'assignments':assignments, 'assignments_count':assignments_count}
     return render(request, 'Academic/student.html', context)
 
-# @login_required(login_url='login')
-# @allowed_user(allowed_roles=['student'])
+
 def user_page(request):
     assignments = request.user.student.assignment_set(all)
     print('assignments:', assignments)
     context = {'assignments':assignments}
     return render(request, 'Academic/user.html', context)
 
-# @allowed_user(allowed_roles=['admin','staff'])
+
 @login_required(login_url='login')
 def list_assignment(request):
     if request.method == 'GET':
@@ -51,7 +47,7 @@ def list_assignment(request):
         return render(request, 'Academic/list.html', context)
     
 
-# every detail of the order
+
 @login_required(login_url='login')
 def assignment_detail(request,id):
     try:
@@ -59,11 +55,9 @@ def assignment_detail(request,id):
         context = {'assignments':assignments}
         return render(request, 'Academic/detail.html', context)
     except Assignment.DoesNotExist:
-        return redirect('home')
+        return redirect('assignment_list')
 
 
-
-#creating order
 @login_required(login_url='login')
 def create_assignment(request):
     form = AssignmentForm()
@@ -72,12 +66,12 @@ def create_assignment(request):
         
         if form.is_valid:
             form.save(commit=False)
-            return redirect('order_detail')
+            return redirect('assignment_detail')
     context = {'form':form}
-    return render(request, 'order_list', context)
+    return render(request, 'Academic/assignment_form.html', context)
     
 
-#updating order
+
 @login_required(login_url='login')
 def update_assignment(request, id):
     assignments = Assignment.objects.get(id=id)
@@ -87,7 +81,7 @@ def update_assignment(request, id):
         form = AssignmentForm(request.PUT,request.FILES, instance=assignments)
         if form.is_valid():
             form.save()
-            return redirect('order_detail')
+            return redirect('assignment_detail')
 
     context = {'form':form}
     return render(request, 'Academic/detail.html', context)
@@ -104,18 +98,16 @@ def delete_assignment(request,id):
     return render(request, 'Academic/delete.html', context)
 
 @login_required(login_url='login')
-def create_answer(request, id):
-    assignments = Assignment.objects.get(id=id)
-    form = AnswerForm(instance=assignments)
-
+def create_answer(request):
+    form = AnswerForm()
     if request.method == 'POST':
         form = AnswerForm(request.POST, request.FILES)
-        if form.is_valid():
+        
+        if form.is_valid:
             form.save(commit=False)
             return redirect('assignment_detail')
-        
-        context = {'assignments':assignments, 'form':form}
-        return render(request, 'Academic/answer.html', context)
+    context = {'form':form}
+    return render(request, 'Academic/answer_form.html', context)
 
 @login_required(login_url='login')
 def update_answer(request, id):
@@ -129,7 +121,7 @@ def update_answer(request, id):
             return redirect('assignment_detail')
 
     context = {'form':form}
-    return render(request, 'Academic/detail.html', context)
+    return render(request, 'Academic/answer_form.html', context)
 
 
 
@@ -151,94 +143,56 @@ def answer_list(request):
         form = AssignmentForm(answers)
         context = {'assignments':answers}
         return render(request, 'Academic/answer_list.html', context)
-
-#login user
-@unauthenticated_user
-def student_login(request):
-
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password ')
-        user_login = User.objects.get(username=username)
-        user = authenticate(request, username = username, password=password)
-
-        if user is not None:
-            login(request, user)
-            return redirect('home')
-        else:
-            messages.info(request, 'Username OR Password is incorrect!')
     
-    context = {}
-    return render(request, 'Academic/login.html', context)
+
+@login_required(login_url='login')
+def answer_detail(request,id):
+    try:
+        answers = Answer.objects.get(id=id)
+        context = {'assignments':answers}
+        return render(request, 'Academic/answer_detail.html', context)
+    except Answer.DoesNotExist:
+        return redirect('answer_list')
 
 
 
-def logout_page(request):
-    logout(request)
-    return redirect('home')
-
-
-
-#register user
-# @unauthenticated_user
-# def register_student(request):
-#     form = createUSerForm()
-#     if request.method == 'POST':
-#         form = createUSerForm(request.POST)
-#         if form.is_valid():
-#             user = form.save() 
-#             username = form.cleaned_data.get('username')
-#             messages.success(request, 'Account created successfully!')
-#             return redirect('student_login')
-       
-#     context = {'form':form}
-#     return render(request, 'Academic/register.html', context)
-
-
-
-
-@unauthenticated_user
-def register_tutor(request):
-    form = createUSerForm()
+def SignUp(request):
+    form = SignupForm()
     if request.method == 'POST':
-        form = createUSerForm(request.POST)
+        form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save() 
-            user.user_type = user_type
-            username = form.cleaned_data.get('username')
+            
             messages.success(request, 'Account created successfully!')
-            user_type = user_type.get(username=username)
-            if user_type is None:
-                messages.info(request, "Please specify if you are a student/tutor!")
-            if user_type == User.TUTOR:
-                Tutor.objects.create(admin=user)
-            elif user_type == User.STUDENT:
-                Student.objects.create(admin=user)
-                print('register')
             return redirect('login')
+        else:
+            messages.error(request, 'Form is not valid!')
        
     context = {'form':form}
     return render(request, 'Academic/register.html', context)
 
 
-@unauthenticated_user
-def tutor_login(request):
 
+def login_page(request):
+    form = LoginForm(request.POST or None)
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password ')
-        user= User.objects.get(username=username)
-        user = authenticate(request, username = username, password=password)
-
-        if user is not None:
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password ')
+            user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_tutor:
             login(request, user)
-            
-            if user.user_type == User.STUDENT:
-                return redirect('student_home')
-            elif user.user_type == User.TUTOR:
-                return redirect('staff_home')
-            else:
-                messages.info(request, 'Username OR Password is incorrect!')
-    context = {}
+            return redirect('tutor_home') 
+        if user is not None and user.is_student:
+            login(request, user)
+            print('Login!')
+            return redirect('student_home') 
+        else:
+            messages.info(request, 'Username OR Password is incorrect!')
+    context = {'form':form}
     return render(request, 'Academic/login.html', context)
 
+
+def logout_page(request):
+    logout(request)
+    return redirect('home')

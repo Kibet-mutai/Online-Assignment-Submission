@@ -6,31 +6,28 @@ from django.contrib.auth.models import User, AbstractUser
 
 # Create your models here.
 
-class User(User):
-    STUDENT = '1'
-    TUTOR = '2'
 
-    user_type_data = (TUTOR, 'TUTOR'), (STUDENT, 'STUDENT')
-    user_type = models.CharField(default=1, choices=user_type_data, max_length=25)
+class User(AbstractUser):
+    is_admin = models.BooleanField('is_admin', default=False)
+    is_student = models.BooleanField('is_student', default=False)
+    is_tutor = models.BooleanField('is_tutor', default=False)
 
 class Student(models.Model):
-    user = models.OneToOneField(User, null=True, on_delete = models.CASCADE,related_name='student')
+    user = models.OneToOneField(User, null=True, on_delete = models.CASCADE)
     first_name =  models.CharField(max_length=50)
     last_name =  models.CharField(max_length=50)
     email = models.EmailField()
     phone_number = PhoneNumberField(blank=True)
-    password = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.first_name
 
 class Tutor(models.Model):
-    user = models.OneToOneField(User, null=True, on_delete = models.CASCADE, related_name='tutor')
+    user = models.OneToOneField(User, null=True, on_delete = models.CASCADE)
     first_name =  models.CharField(max_length=50)
     last_name =  models.CharField(max_length=50)
     email = models.EmailField()
     phone_number = PhoneNumberField(blank=True)
-    password = models.CharField(max_length=50, unique=True)
     bio = models.TextField()
 
     def __str__(self):
